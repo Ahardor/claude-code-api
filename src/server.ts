@@ -35,7 +35,8 @@ async function startServer() {
   const app = express();
 
   // Middleware
-  app.use(express.json());
+  // Generous body limit: agentic clients (e.g. Claude Code) send 100KB+ payloads
+  app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
   

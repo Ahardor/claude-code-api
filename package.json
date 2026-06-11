@@ -10,7 +10,7 @@
     "generate-certs": "bash scripts/generate-certs.sh"
   },
   "dependencies": {
-    "@anthropic-ai/claude-code": "*",
+    "@anthropic-ai/claude-code": "npm:@anthropic-ai/claude-agent-sdk@*",
     "express": "^4.18.2",
     "cookie-parser": "^1.4.6"
   },

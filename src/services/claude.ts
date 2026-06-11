@@ -1,8 +1,14 @@
 import { query, type SDKMessage } from '@anthropic-ai/claude-code';
 
+export interface OpenAIContentPart {
+  type: string;
+  text?: string;
+}
+
 export interface OpenAIMessage {
   role: 'system' | 'user' | 'assistant';
-  content: string;
+  // OpenAI allows content as a plain string or an array of content parts
+  content: string | OpenAIContentPart[];
 }
 
 export interface ChatCompletionRequest {
@@ -56,7 +62,7 @@ export class ClaudeService {
     try {
       // Make a minimal request to test the token
       const request: ChatCompletionRequest = {
-        model: 'claude-3-5-haiku-20241022',
+        model: 'claude-haiku-4-5',
         messages: [{ role: 'user', content: 'Hi' }],
         max_tokens: 1,
         stream: false
@@ -80,18 +86,32 @@ export class ClaudeService {
   private formatMessages(messages: OpenAIMessage[]): string {
     return messages
       .map(msg => {
+        const content = this.contentToText(msg.content);
         switch (msg.role) {
           case 'system':
-            return `System: ${msg.content}`;
+            return `System: ${content}`;
           case 'user':
-            return `Human: ${msg.content}`;
+            return `Human: ${content}`;
           case 'assistant':
-            return `Assistant: ${msg.content}`;
+            return `Assistant: ${content}`;
           default:
-            return msg.content;
+            return content;
         }
       })
       .join('\n\n');
+  }
+
+  /**
+   * Normalize OpenAI message content (string or array of parts) to plain text
+   */
+  private contentToText(content: OpenAIMessage['content']): string {
+    if (typeof content === 'string') {
+      return content;
+    }
+    return content
+      .map(part => (typeof part === 'string' ? part : part.text ?? ''))
+      .filter(Boolean)
+      .join('\n');
   }
 
   /**
@@ -103,19 +123,20 @@ export class ClaudeService {
       // Friendly names from our API
       'Opus 4': 'opus',
       'Sonnet 4': 'sonnet',
-      'Haiku 3.5': 'claude-3-5-haiku-20241022',
+      'Haiku 4.5': 'claude-haiku-4-5',
       // Direct model names
       'opus': 'opus',
       'sonnet': 'sonnet',
-      'claude-3-5-haiku-20241022': 'claude-3-5-haiku-20241022',
+      'claude-3-5-haiku-20241022': 'claude-haiku-4-5',
       // Legacy/compatibility mappings
       'gpt-4': 'opus',
       'gpt-4-turbo': 'sonnet',
-      'gpt-3.5-turbo': 'claude-3-5-haiku-20241022',
-      'haiku': 'claude-3-5-haiku-20241022'
+      'gpt-3.5-turbo': 'claude-haiku-4-5',
+      'haiku': 'claude-haiku-4-5'
     };
 
-    return modelMap[model] || 'sonnet'; // Default to sonnet
+    // Pass through unknown model IDs so callers can use any current Claude model
+    return modelMap[model] || model;
   }
 
   /**

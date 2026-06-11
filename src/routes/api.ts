@@ -37,12 +37,12 @@ export function createApiRouter(
           parent: null
         },
         {
-          id: 'Haiku 3.5',
+          id: 'Haiku 4.5',
           object: 'model',
           created: 1729555200,
           owned_by: 'anthropic',
           permission: [],
-          root: 'claude-3-5-haiku-20241022',
+          root: 'claude-haiku-4-5',
           parent: null
         }
       ]
